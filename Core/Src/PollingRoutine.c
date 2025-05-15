@@ -305,5 +305,8 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 
 void HAL_FDCAN_TxFifoEmptyCallback(FDCAN_HandleTypeDef *hfdcan)
 {
-	FDCAN_Tx_Send(&fdcan1_msg); // send anymore pending messages in queue
+	if(hfdcan == &hfdcan1)
+	{
+		FDCAN_Tx_Send(&fdcan1_msg); // send anymore pending messages in queue
+	}
 }
