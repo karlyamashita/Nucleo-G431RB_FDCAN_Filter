@@ -155,6 +155,73 @@ void FDCAN1_TxMessage(void)
 	txMsg.txData.data[2] = 0xCC;
 	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
 
+	// send ID 0x400
+	txMsg.txHeader.Identifier = 0x400;
+	txMsg.txHeader.DataLength = 1;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0x00;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send ID 0x401
+	txMsg.txHeader.Identifier = 0x401;
+	txMsg.txHeader.DataLength = 1;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0x01;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send ID 0x402
+	txMsg.txHeader.Identifier = 0x402;
+	txMsg.txHeader.DataLength = 1;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0x02;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send ID 0x403
+	txMsg.txHeader.Identifier = 0x403;
+	txMsg.txHeader.DataLength = 1;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0x03;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// these 404 and 405 won't pass
+	// send ID 0x404
+	txMsg.txHeader.Identifier = 0x404;
+	txMsg.txHeader.DataLength = 1;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0x04;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send ID 0x405
+	txMsg.txHeader.Identifier = 0x405;
+	txMsg.txHeader.DataLength = 1;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0x05;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
 	// send ID 0x10044080
 	txMsg.txHeader.Identifier = 0x10044080;
 	txMsg.txHeader.DataLength = 8;
@@ -264,6 +331,16 @@ void FDCAN_Filter_Init()
 	sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
 	sFilterConfig.FilterID1 = 0x3AB;
 	sFilterConfig.FilterID2 = 0x7FF;
+	FDCAN_Filter(&fdcan1_msg, &sFilterConfig);
+
+	// This will allow a range of ID's to pass.
+	/* Configure Rx filter for ID 0x40x*/
+	sFilterConfig.IdType = FDCAN_STANDARD_ID;
+	sFilterConfig.FilterIndex = 4; // increment index as more STD ID's are added
+	sFilterConfig.FilterType = FDCAN_FILTER_MASK;
+	sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+	sFilterConfig.FilterID1 = 0x400;
+	sFilterConfig.FilterID2 = 0x7FC; // last 2 bits are don't care. We will allow ID's 400-403 to pass.
 	FDCAN_Filter(&fdcan1_msg, &sFilterConfig);
 
 	// Only 8 filters allocated for Extended ID
