@@ -231,8 +231,8 @@ void FDCAN1_TxMessage(void)
 }
 
 /*
- * Description: Configure filter(s) for ID 0x0321, 0x2AC, 0x101 and 0x10044080
- * 				Note: Std Filters Nbr = 28, Ext Filters Nbr = 8
+ * Description: Configure filter(s) for ID 0x100, 0x200, 0x03AB, 0x10044080
+ * 				Note: Std Filters Nbr = 8, Ext Filters Nbr = 8
  */
 void FDCAN_Filter_Init()
 {
