@@ -84,37 +84,11 @@ void FDCAN1_Parse(FDCAN_Data_t *msg)
 	{
 		if(msg->msgToParse->rxHeader.IdType == FDCAN_STANDARD_ID)
 		{
-			if(msg->msgToParse->rxHeader.Identifier == 0x321)
-			{
-				sprintf(str, "DDM ID=0x%lX, dlc = %ld, ", msg->msgToParse->rxHeader.Identifier, msg->msgToParse->rxHeader.DataLength);
-			}
-			else if(msg->msgToParse->rxHeader.Identifier == 0x101)
-			{
-				sprintf(str, "ONS ID=0x%lX, dlc = %ld, ", msg->msgToParse->rxHeader.Identifier, msg->msgToParse->rxHeader.DataLength);
-			}
-			else if(msg->msgToParse->rxHeader.Identifier == 0x2AC)
-			{
-				sprintf(str, "IPC ID=0x%lX, dlc = %ld, ", msg->msgToParse->rxHeader.Identifier, msg->msgToParse->rxHeader.DataLength);
-			}
-			else if(msg->msgToParse->rxHeader.Identifier == 0x200)
-			{
-				sprintf(str, "We should not see this message as ID 0x200 does not match filter(s)");
-			}
-			else
-			{
-				return;
-			}
+			sprintf(str, "ID=0x%lX, dlc = %ld, ", msg->msgToParse->rxHeader.Identifier, msg->msgToParse->rxHeader.DataLength);
 		}
 		else // EXTENDED ID
 		{
-			if(msg->msgToParse->rxHeader.Identifier == 0x10044080)
-			{
-				sprintf(str, "BCM ID=0x%lX, dlc = %ld, ", msg->msgToParse->rxHeader.Identifier, msg->msgToParse->rxHeader.DataLength);
-			}
-			else
-			{
-				return;
-			}
+			sprintf(str, "ID=0x%lX, dlc = %ld, ", msg->msgToParse->rxHeader.Identifier, msg->msgToParse->rxHeader.DataLength);
 		}
 		// get data
 		for(i = 0; i < msg->msgToParse->rxHeader.DataLength; i++)
@@ -142,9 +116,21 @@ void FDCAN1_Parse(FDCAN_Data_t *msg)
 void FDCAN1_TxMessage(void)
 {
 	FDCAN_Tx_t txMsg = {0};
-	int i;
 
-	// send a non matching ID 0x200 to show the filter works
+	// send ID's that match the filters
+	// send ID 0x100
+
+	txMsg.txHeader.Identifier = 0x100;
+	txMsg.txHeader.DataLength = 1;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0xAA;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send ID 0x200
 	txMsg.txHeader.Identifier = 0x200;
 	txMsg.txHeader.DataLength = 2;
 	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
@@ -153,67 +139,95 @@ void FDCAN1_TxMessage(void)
 	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
 	txMsg.txHeader.MessageMarker = 0;
 	txMsg.txData.data[0] = 0xAA;
-	txMsg.txData.data[1] = 0xCC;
+	txMsg.txData.data[1] = 0xBB;
 	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
 
-	// now we will send ID's that match the filters
-
-	// send ID 0x321
-	txMsg.txHeader.Identifier = 0x321;
-	txMsg.txHeader.DataLength = 2;
+	// send ID 0x3AB
+	txMsg.txHeader.Identifier = 0x3AB;
+	txMsg.txHeader.DataLength = 3;
 	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
 	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
 	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
 	txMsg.txHeader.MessageMarker = 0;
-	txMsg.txData.data[1] = 0xAA; // 0xAA
-	for(i = 0; i < SEND_AMOUNT; i++)
-	{
-		txMsg.txData.data[0] = i;
-		FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
-	}
-
-	// send ID 0x101
-	txMsg.txHeader.Identifier = 0x101;
-	txMsg.txHeader.DataLength = 2;
-	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
-	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
-	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
-	txMsg.txHeader.MessageMarker = 0;
-	txMsg.txData.data[1] = 0xBB; // 0xBB
-	for(i = 0; i < SEND_AMOUNT; i++)
-	{
-		txMsg.txData.data[0] = i;
-		FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
-	}
-
-	// send ID 0x2AC
-	txMsg.txHeader.Identifier = 0x2AC;
-	txMsg.txHeader.DataLength = 2;
-	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
-	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
-	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
-	txMsg.txHeader.MessageMarker = 0;
-	txMsg.txData.data[1] = 0xCC; // 0xCC
-	for(i = 0; i < SEND_AMOUNT; i++)
-	{
-		txMsg.txData.data[0] = i;
-		FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
-	}
+	txMsg.txData.data[0] = 0xAA;
+	txMsg.txData.data[1] = 0xBB;
+	txMsg.txData.data[2] = 0xCC;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
 
 	// send ID 0x10044080
 	txMsg.txHeader.Identifier = 0x10044080;
-	txMsg.txHeader.DataLength = 2;
+	txMsg.txHeader.DataLength = 8;
 	txMsg.txHeader.IdType = FDCAN_EXTENDED_ID;
 	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
 	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
-	txMsg.txHeader.TxEventFifoControl =
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txData.data[0] = 0xAA;
+	txMsg.txData.data[1] = 0xBB;
+	txMsg.txData.data[2] = 0xCC;
+	txMsg.txData.data[3] = 0xDD;
+	txMsg.txData.data[4] = 0xEE;
+	txMsg.txData.data[5] = 0xFF;
+	txMsg.txData.data[6] = 0x1A;
+	txMsg.txData.data[7] = 0x2B;
 	txMsg.txHeader.MessageMarker = 0;
-	txMsg.txData.data[1] = 0xDD; // 0xCC
-	for(i = 0; i < SEND_AMOUNT; i++)
-	{
-		txMsg.txData.data[0] = i;
-		FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
-	}
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send non matching ID's below to show the filter works
+
+	// send ID 0x111
+	txMsg.txHeader.Identifier = 0x111;
+	txMsg.txHeader.DataLength = 2;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0xAA;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send ID 0x205
+	txMsg.txHeader.Identifier = 0x205;
+	txMsg.txHeader.DataLength = 2;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0xAA;
+	txMsg.txData.data[1] = 0xBB;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send ID 0x300
+	txMsg.txHeader.Identifier = 0x300;
+	txMsg.txHeader.DataLength = 3;
+	txMsg.txHeader.IdType = FDCAN_STANDARD_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0x01;
+	txMsg.txData.data[1] = 0x02;
+	txMsg.txData.data[2] = 0x03;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
+
+	// send ID 0x100440C0
+	txMsg.txHeader.Identifier = 0x100440C0;
+	txMsg.txHeader.DataLength = 8;
+	txMsg.txHeader.IdType = FDCAN_EXTENDED_ID;
+	txMsg.txHeader.TxFrameType = FDCAN_DATA_FRAME;
+	txMsg.txHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	txMsg.txHeader.TxEventFifoControl = FDCAN_TX_EVENT;
+	txMsg.txHeader.MessageMarker = 0;
+	txMsg.txData.data[0] = 0x11;
+	txMsg.txData.data[1] = 0x22;
+	txMsg.txData.data[2] = 0x33;
+	txMsg.txData.data[3] = 0x44;
+	txMsg.txData.data[4] = 0x55;
+	txMsg.txData.data[5] = 0x66;
+	txMsg.txData.data[6] = 0x77;
+	txMsg.txData.data[7] = 0x88;
+	FDCAN_Add_TxQueue(&fdcan1_msg, &txMsg); // add to queue
 }
 
 /*
@@ -224,34 +238,36 @@ void FDCAN_Filter_Init()
 {
 	FDCAN_FilterTypeDef sFilterConfig;
 
-	/* Configure Rx filter for ID 0x321*/
-	sFilterConfig.IdType = FDCAN_STANDARD_ID;
-	sFilterConfig.FilterIndex = 0; // increment index as more STD ID's are added
-	sFilterConfig.FilterType = FDCAN_FILTER_MASK;
-	sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-	sFilterConfig.FilterID1 = 0x321;
-	sFilterConfig.FilterID2 = 0x7FF;
-	FDCAN_Filter(&fdcan1_msg, &sFilterConfig);
-
-	/* Configure Rx filter for ID 0x101*/
+	// Only 8 filters allocated for Standard ID
+	/* Configure Rx filter for ID 0x100*/
 	sFilterConfig.IdType = FDCAN_STANDARD_ID;
 	sFilterConfig.FilterIndex = 1;
 	sFilterConfig.FilterType = FDCAN_FILTER_MASK;
 	sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-	sFilterConfig.FilterID1 = 0x101;
+	sFilterConfig.FilterID1 = 0x100;
 	sFilterConfig.FilterID2 = 0x7FF;
 	FDCAN_Filter(&fdcan1_msg, &sFilterConfig);
 
-	/* Configure Rx filter for ID 0x2AC*/
+	/* Configure Rx filter for ID 0x200*/
 	sFilterConfig.IdType = FDCAN_STANDARD_ID;
 	sFilterConfig.FilterIndex = 2;
 	sFilterConfig.FilterType = FDCAN_FILTER_MASK;
 	sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-	sFilterConfig.FilterID1 = 0x2AC;
+	sFilterConfig.FilterID1 = 0x200;
 	sFilterConfig.FilterID2 = 0x7FF;
 	FDCAN_Filter(&fdcan1_msg, &sFilterConfig);
 
-	/* Configure Rx filter for ID 0x101*/
+	/* Configure Rx filter for ID 0x3AB*/
+	sFilterConfig.IdType = FDCAN_STANDARD_ID;
+	sFilterConfig.FilterIndex = 3; // increment index as more STD ID's are added
+	sFilterConfig.FilterType = FDCAN_FILTER_MASK;
+	sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+	sFilterConfig.FilterID1 = 0x3AB;
+	sFilterConfig.FilterID2 = 0x7FF;
+	FDCAN_Filter(&fdcan1_msg, &sFilterConfig);
+
+	// Only 8 filters allocated for Extended ID
+	/* Configure Rx filter for ID 0x10044080*/
 	sFilterConfig.IdType = FDCAN_EXTENDED_ID;
 	sFilterConfig.FilterIndex = 0; // first EXT ID, so we can start at zero
 	sFilterConfig.FilterType = FDCAN_FILTER_MASK;
